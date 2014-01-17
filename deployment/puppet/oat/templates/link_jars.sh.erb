@@ -1,0 +1,14 @@
+#!/bin/bash
+tomcat_dir="<%= tomcat_dir %>"
+http_dir="<%= http_dir %>"
+apps_dir="<%= apps_dir %>"
+
+. <%= oat_function %>
+linkJar "$apps_dir/HisWebServices/WEB-INF/lib"
+linkJar "$apps_dir/HisPrivacyCAWebServices2/WEB-INF/lib"
+linkJar "$apps_dir/HisPrivacyCAWebServices2/ClientFiles/lib"
+linkJar "$apps_dir/WLMService/WEB-INF/lib"
+linkJar "$apps_dir/AttestationService/WEB-INF/lib"
+
+linkJarTomcat6lib
+
