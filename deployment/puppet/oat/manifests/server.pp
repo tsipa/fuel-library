@@ -13,19 +13,60 @@ class oat::server (
   #package { $oat::params::server_package :
   # ensure => installed,
   #}
+
   $tomcat_dir = $oat::params::server_tomcat_dir
   $http_dir = $oat::params::server_http_dir
   $apps_dir = $oat::params::server_apps_dir
   $oat_function = $oat::params::server_oat_function
+  $ip12file = $oat::params::server_ip12file
+  $ipassfile = $oat::params::server_ipassfile
+  $idomfile = $oat::params::server_idomfile
+  $iloc = $oat::params::server_iloc
+  $keystore = $oat::params::server_keystore
+  $truststore = $oat::params::server_truststore
+  $libdir = $oat::params::server_libdir
+  $oat_port = $oat::params::server_oat_port
+  $min_spare_threads = $oat::params::min_spare_threads
+  $max_spare_threads = $oat::params::max_spare_threads
+  $max_threads = $oat::params::max_threads
+
   package { $oat::params::server_package:
     ensure => present,
   }
 
-   file { '/tmp/link_jars.sh' :
+  file { '/tmp/link_jars.sh' :
     ensure => present,
     owner  => 'root',
     mode => '0755',
     content => template('oat/link_jars.sh.erb'),
+  }
+
+  file { '/tmp/truststore.sh' :
+    ensure => present,
+    owner  => 'root',
+    mode => '0755',
+    content => template('oat/truststore.sh.erb'),
+  }
+
+  file { "${tomcat_dir}/conf/context.xml" :
+    ensure => present,
+    owner  => 'root',
+    mode => '0644',
+    content => template('oat/tomcat_context.xml.erb'),
+  }
+
+  file { "${tomcat_dir}/conf/server.xml" :
+    ensure => present,
+    owner  => 'root',
+    mode => '0644',
+    content => template('oat/tomcat_server.xml.erb'),
+  }
+
+  file { "${tomcat_dir}/webapps/HisWebServices/WEB-INF/classes/hibernateOat.cfg.xml" :
+    ensure => present,
+    owner  => 'root',
+    mode => '0644',
+    content => template('oat/hibernateOat.cfg.xml.erb'),
   }
 
   service { $oat::params::server_service :

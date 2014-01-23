@@ -1,0 +1,34 @@
+#!/bin/bash
+ip12="<%= ip12file %>"
+ipassfile="<%= ipassfile %>"
+idomfile="<%= idomfile %>"
+iloc="<%= iloc %>"
+p12file="${iloc}/${ip12}"
+keystore="<%= keystore %>"
+truststore="<%= truststore %>"
+libdir="<%= libdir %>"
+#p12pass = "<%= p12pass %>"
+RAND1=$(dd if=/dev/urandom bs=1 count=1024)
+RAND2=$(dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}')
+RAND3=$(dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}')
+randbits="$(echo "$( echo "`clock`" | md5sum | md5sum )$( echo "`dd if=/dev/urandom bs=1 count=1024`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum )$(echo "`dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}'`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum)$(echo "`dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}'`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum )" | md5sum | md5sum )"
+randpass="${randbits:0:30}"
+randbits2="$(echo "$( echo "`clock`" | md5sum | md5sum )$( echo "`dd if=/dev/urandom bs=1 count=1024`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum )$(echo "`dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}'`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum)$(echo "`dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}'`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum )" | md5sum | md5sum )"
+randpass2="${randbits2:0:30}"
+randbits3="$(echo "$( echo "`clock`" | md5sum | md5sum )$( echo "`dd if=/dev/urandom bs=1 count=1024`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum )$(echo "`dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}'`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum)$(echo "`dd if=/dev/urandom bs=1 count=1024 | awk '{print $1}'`" | md5sum | md5sum)$(echo "`clock`" | md5sum | md5sum )" | md5sum | md5sum )"
+randpass3="${randbits3:0:30}"
+p12pass="$randpass"
+
+cd ${libdir}/Certificate/
+openssl req -x509 -nodes -days 730 -newkey rsa:2048 -keyout hostname.pem -out hostname.cer -subj "/C=US/O=U.S. Government/OU=DoD/CN=`hostname`"
+openssl pkcs12 -export -in hostname.cer -inkey hostname.pem -out $p12file -passout pass:$p12pass
+
+keytool -importkeystore -srckeystore $p12file -destkeystore $keystore -srcstoretype pkcs12 -srcstorepass $p12pass -deststoretype jks -deststorepass $p12pass -noprompt
+
+myalias=`keytool -list -v -keystore $keystore -storepass $p12pass | grep -B2 'PrivateKeyEntry' | grep 'Alias name:'`
+
+keytool -changealias -alias ${myalias#*:} -destalias tomcat -v -keystore $keystore -storepass $p12pass
+
+rm -f $truststore
+keytool -import -keystore $truststore -storepass password -file hostname.cer -noprompt
+

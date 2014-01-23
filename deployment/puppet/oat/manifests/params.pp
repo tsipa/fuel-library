@@ -9,4 +9,17 @@ class oat::params {
   $server_http_dir = '/var/www/html'
   $server_apps_dir = "${server_tomcat_dir}/webapps"
   $server_oat_function = '/usr/share/oat-appraiser/oat_function'
+  $server_ip12file = "internal.p12"
+  $server_ipassfile = "internal.pass"
+  $server_idomfile = "internal.domain"
+  $server_iloc = "/usr/share/oat-appraiser/"
+  $server_keystore = "keystore.jks"
+  $server_truststore = "TrustStore.jks"
+  $server_libdir = "/var/lib/oat-appraiser/"
+  $server_oat_port = "8443"
+  $server_min_spare_threads = 5
+  $server_max_spare_threads = 75
+  $server_max_threads = 200
+  $server_attestation_interval = 60000
+  $server_attestation_timeout = 60000
 }
