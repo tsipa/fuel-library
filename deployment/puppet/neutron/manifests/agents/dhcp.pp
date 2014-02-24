@@ -1,8 +1,8 @@
 #
 class neutron::agents::dhcp (
   $neutron_config     = {},
-  $verbose          = 'False',
-  $debug            = 'False',
+  $verbose          = false,
+  $debug            = false,
   $interface_driver = 'neutron.agent.linux.interface.OVSInterfaceDriver',
   $dhcp_driver      = 'neutron.agent.linux.dhcp.Dnsmasq',
   $dhcp_agent_manager='neutron.agent.dhcp_agent.DhcpAgentWithStateReport',
@@ -25,9 +25,9 @@ class neutron::agents::dhcp (
   if $::operatingsystem == 'Ubuntu' {
     file { '/etc/init/neutron-dhcp-agent.override':
      replace => 'no',
-     ensure => 'present',
+     ensure  => 'present',
      content => 'manual',
-     mode => 644,
+     mode    => '0644',
     } -> Package<| title=="$dhcp_agent_package" |>
     if $service_provider != 'pacemaker' {
        Package<| title=="$dhcp_agent_package" |> ->
@@ -67,6 +67,7 @@ class neutron::agents::dhcp (
     'DEFAULT/log_dir':          ensure => absent;
     'DEFAULT/log_file':         ensure => absent;
     'DEFAULT/log_config':       ensure => absent;
+    #TODO(bogdando) fix syslog usage after Oslo logging patch synced in I
     'DEFAULT/use_syslog':       ensure => absent;
     'DEFAULT/use_stderr':       ensure => absent;
     'DEFAULT/state_path':        value => $state_path;
@@ -95,10 +96,10 @@ class neutron::agents::dhcp (
     # OCF script for pacemaker
     # and his dependences
     file {'neutron-dhcp-agent-ocf':
-      path=>'/usr/lib/ocf/resource.d/mirantis/neutron-agent-dhcp',
-      mode => 755,
-      owner => root,
-      group => root,
+      path   =>'/usr/lib/ocf/resource.d/mirantis/neutron-agent-dhcp',
+      mode   => '0755',
+      owner  => root,
+      group  => root,
       source => "puppet:///modules/neutron/ocf/neutron-agent-dhcp",
     }
 
@@ -238,4 +239,3 @@ class neutron::agents::dhcp (
 
 }
 
-# vim: set ts=2 sw=2 et :

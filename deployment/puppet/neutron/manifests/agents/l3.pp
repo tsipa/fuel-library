@@ -1,8 +1,8 @@
 #
 class neutron::agents::l3 (
   $neutron_config     = {},
-  $verbose          = 'False',
-  $debug            = 'False',
+  $verbose          = false,
+  $debug            = false,
   $interface_driver = 'neutron.agent.linux.interface.OVSInterfaceDriver',
   $service_provider = 'generic'
 ) {
@@ -27,9 +27,9 @@ class neutron::agents::l3 (
   if $::operatingsystem == 'Ubuntu' {
     file { '/etc/init/neutron-l3-agent.override':
       replace => 'no',
-      ensure => 'present',
+      ensure  => 'present',
       content => 'manual',
-      mode => 644,
+      mode    => '0644',
     } -> Package<| title == "$l3_agent_package" |>
     if $service_provider != 'pacemaker' {
        Package<| title == "$l3_agent_package" |> ->
@@ -52,6 +52,7 @@ class neutron::agents::l3 (
     'DEFAULT/log_dir':       ensure => absent;
     'DEFAULT/log_file':      ensure => absent;
     'DEFAULT/log_config':    ensure => absent;
+    #TODO(bogdando) fix syslog usage after Oslo logging patch synced in I
     'DEFAULT/use_syslog':    ensure => absent;
     'DEFAULT/use_stderr':    ensure => absent;
     'DEFAULT/router_id':     ensure => absent;
@@ -94,10 +95,10 @@ class neutron::agents::l3 (
     # OCF script for pacemaker
     # and his dependences
     file {'neutron-l3-agent-ocf':
-      path=>'/usr/lib/ocf/resource.d/mirantis/neutron-agent-l3',
-      mode => 755,
-      owner => root,
-      group => root,
+      path   =>'/usr/lib/ocf/resource.d/mirantis/neutron-agent-l3',
+      mode   => '0755',
+      owner  => root,
+      group  => root,
       source => "puppet:///modules/neutron/ocf/neutron-agent-l3",
     }
 
@@ -247,4 +248,3 @@ class neutron::agents::l3 (
 
 }
 
-# vim: set ts=2 sw=2 et :
