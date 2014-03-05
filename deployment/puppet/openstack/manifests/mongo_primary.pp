@@ -29,6 +29,7 @@ class openstack::mongo_primary (
   mongodb::db { $ceilometer_database:
     user          => $ceilometer_user,
     password      => $ceilometer_db_password,
+    roles         => ['readWrite', 'dbAdmin'],
   } ->
   mongodb::db { 'admin':
     user         => 'admin',
