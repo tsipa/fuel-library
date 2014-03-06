@@ -108,12 +108,8 @@ class MrntNeutron
     #rv = cfg.clone()
     case cfg[:provider].to_s().downcase
       when "mysql"
-        url_opts = {
-          :read_timeout => cfg[:read_timeout],
-          :charset      => cfg[:charset],
-        }.select{|k,v| !v.nil? and v != ''}.collect{|k,v| "#{k}=#{v}"}
-        optline = url_opts.size>0  ?  "?#{url_opts.join('&')}"  :  ''
-        rv = "mysql://#{cfg[:username]}:#{cfg[:passwd]}@#{cfg[:host]}:#{cfg[:port]}/#{cfg[:database]}#{optline}"
+        charset = cfg[:charset] ? "?charset=#{cfg[:charset]}" : ''
+        rv = "mysql://#{cfg[:username]}:#{cfg[:passwd]}@#{cfg[:host]}:#{cfg[:port]}/#{cfg[:database]}#{charset}"
       when "pgsql"
         raise(Puppet::ParseError, "unsupported database provider \"#{cfg[:provider]}\".")
       when "sqlite"
@@ -276,7 +272,6 @@ class MrntNeutron
         :passwd   => "neutron",
         :reconnects => -1,
         :reconnect_interval => 2,
-        :read_timeout => 60,
         :charset  => nil,
       },
       :keystone => {
