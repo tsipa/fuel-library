@@ -139,7 +139,7 @@ case $::operatingsystem {
   }
   default: {
     $queue_provider='rabbitmq'
-    $custom_mysql_setup_class='galera'
+    $custom_mysql_setup_class='mariadb'
   }
 }
 

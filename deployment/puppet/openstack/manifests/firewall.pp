@@ -7,6 +7,7 @@ class openstack::firewall (
   $mysql_backend_port = 3307,
   $mysql_gcomm_port = 4567,
   $galera_ist_port = 4568,
+  $rsync_sst_port = 4444,
   $keystone_public_port =  5000,
   $swift_proxy_port =  8080,
   $swift_object_port =  6000,
@@ -89,7 +90,7 @@ class openstack::firewall (
   }
 
   firewall {'101 mysql':
-    port   => [$mysql_port, $mysql_backend_port, $mysql_gcomm_port, $galera_ist_port],
+    port   => [$mysql_port, $mysql_backend_port, $mysql_gcomm_port, $galera_ist_port, $rsync_sst_port],
     proto  => 'tcp',
     action => 'accept',
   }

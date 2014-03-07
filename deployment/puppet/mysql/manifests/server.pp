@@ -225,8 +225,16 @@ class mysql::server (
 #    require($galera_class)
   }
 
-   else {
-    require($custom_setup_class)
+  else {
+    Class[$custom_setup_class] -> Class['mysql::server']
+
+    class { $custom_setup_class:
+      cluster_nodes => $galera_nodes,
+      node_address  => $galera_node_address,
+      bind_address  => $galera_node_address,
+      is_initiator  => $primary_controller,
+    }
+
   }
 }
 
