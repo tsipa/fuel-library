@@ -11,6 +11,7 @@ class mariadb (
   $bind_address  = '0.0.0.0',
   $listen_port   = '3307',
   $is_initiator  = false,
+  $root_password = '',
 ) {
 
   include mariadb::params
@@ -64,15 +65,24 @@ class mariadb (
     # $service_ensure = 'stopped'
     $service_start = $::mariadb::params::bootstrap_cluster_command
 
-    # exec { 'bootstrap_cluster':
-    #   command => $::mariadb::params::bootstrap_cluster_command,
-    #   require => [Service['mysql'], File['wsrep_cluster_conf']],
-    # }
+    exec { 'bootstrap_cluster':
+      command => $::mariadb::params::bootstrap_cluster_command,
+      require => File['wsrep_cluster_conf'],
+    }
+    
+    exec { 'set_root_password':
+      command => "mysqladmin -u root password ${root_password}",
+      tries     => 6,
+      try_sleep => 5,
+      require   => Service['mysql'],
+    }
 
+    File['wsrep_cluster_conf'] -> Exec['bootstrap_cluster'] -> Exec['set_root_password']
+    
     if ($::osfamily == 'Debian') {
       exec { 'set_dba_passwd':
         command   => "/usr/bin/mysql -e \"SET PASSWORD FOR 'debian-sys-maint'@'localhost' = PASSWORD('${::mariadb::params::dba_passwd}');\"",
-        # require   => Exec['bootstrap_cluster'],
+        require   => Exec['bootstrap_cluster'],
         require   => Service['mysql'],
         before    => File['debian_conf'],
         tries     => 6,
@@ -86,14 +96,15 @@ class mariadb (
     File['wsrep_cluster_conf'] ~> Service['mysql']
   }
 
-  # notify { "IS_PRIMARYHOST: ${is_primaryhost}": }
-  # notify { "BOOTSTRAP_WSREP_CLUSTER: ${bootstrap_wsrep_cluster}": }
-  # notify { "SERVICE_ENSURE: ${service_ensure}": }
+  notify { "IS_PRIMARYHOST: ${is_primaryhost}": }
+  notify { "BOOTSTRAP_WSREP_CLUSTER: ${bootstrap_wsrep_cluster}": }
+  notify { "SERVICE_ENSURE: ${service_ensure}": }
 
   File['wsrep_cluster_conf'] -> Service['mysql'] -> Exec['activate_cluster_watcher']
 
+
   exec { 'activate_cluster_watcher':
-    command   => "/usr/bin/mysql -e \"grant usage on *.* to 'cluster_watcher'@'%'; flush privileges;\"",
+    command   => "/usr/bin/mysql -u root -p${root_password} -e \"grant usage on *.* to 'cluster_watcher'@'%'; flush privileges;\"",
     unless    => "mysql -NBe \"select 1 from mysql.user where user = 'cluster_watcher'\" | grep -q 1",
     tries     => 6,
     try_sleep => 5,
