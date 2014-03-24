@@ -19,9 +19,9 @@ class mariadb::params {
       $wsrep_provider            = '/usr/lib64/galera/libgalera_smm.so'
     }
     'Suse':  {
-      $config_path               = '/etc/mysql'
-      $packages                  = ['mariadb-galera-cluster', 'mariadb-galera-cluster-client', 'galera']
-      $bootstrap_cluster_command = '/sbin/service mysql bootstrap'
+      $config_path               = '/etc/my.cnf.d'
+      $packages                  = ['mariadb-server', 'galera']
+      $bootstrap_cluster_command = "/etc/init.d/mysql bootstrap"
       $wsrep_provider            = '/usr/lib64/mysql/plugin/libgalera_smm.so'
 
     }

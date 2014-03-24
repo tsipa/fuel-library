@@ -1,26 +1,41 @@
-#
-# Configuration example
+$fuel_settings = parseyaml($astute_settings_yaml)
+$nodes_hash           = $::fuel_settings['nodes']
+$controllers = merge_arrays(filter_nodes($nodes_hash,'role','primary-controller'), filter_nodes($nodes_hash,'role','controller'))
+$node = filter_nodes($nodes_hash,'name',$::hostname)
+$internal_address = $node[0]['internal_address']
+$root_password = $fuel_settings['mysql']['root_password']
 
-#
-# Configuration variables
-#
+$galera_cluster_name      = 'openstack'
+$enabled                  = true
+$custom_mysql_setup_class = 'galera'
 
-# cluster_nodes => (array) galera nodes list
-# node_address  => (string) galera node ipaddress
-# bind_address  => (string) ipaddress to bind to
-# is_initiator  => (boolean) is primary controller or not
 
-#
-# The node definition
-#
-node /galera/ {
+if $::fuel_settings['role'] == 'primary-controller' {
+  $primary_controller = true
+} else {
+  $primary_controller = false
+}
+
 
   class { 'mariadb':
-     cluster_nodes => $galera_nodes,
-     node_address  => $galera_node_address,
-     bind_address  => $galera_node_address,
+     cluster_nodes => $controllers,
+     node_address  => $internal_address,
+     bind_address  => $internal_address,
      is_initiator  => $primary_controller,
+     root_password => $root_password,
    }
 
-}
+
+#  class { 'mysql::server':
+#    config_hash         => {
+#      'bind_address' => '0.0.0.0'
+#    }
+#    ,
+#    galera_cluster_name => $galera_cluster_name,
+#    primary_controller  => $primary_controller,
+#    galera_node_address => $internal_address,
+#    enabled             => $enabled,
+#    custom_setup_class  => $custom_mysql_setup_class,
+#  }
+
 
